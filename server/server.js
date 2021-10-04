@@ -6,9 +6,13 @@ const bodyParser = require('body-parser');
 require('dotenv').config()
 
 const users = require('./routes/api/users')
+const { checkToken } = require('./middleware/auth')
 
 //parse the body of the request at JSON
 app.use(bodyParser.json());
+
+//use auth middleware before every call 
+app.use(checkToken)
 
 //create a route /api/users goes to the routes defined in users -> routes/api/users
 app.use("/api/users", users);
@@ -21,7 +25,7 @@ app.listen(port,()=>{
 //
 
 //COnnect to MongoDB
-const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}?retryWrites=true&w=majority`
+const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
 mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
