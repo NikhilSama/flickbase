@@ -45,5 +45,31 @@ const userSchema = mongoose.Schema({
     }
 );
 
+//pre function edits the data before every save
+userSchema.pre('save', async function(next){
+    let user = this;
+    if (user.isModified('password')) {
+        //hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(user.password,salt);
+        user.password = hash;
+    }
+    next()
+})
+
+//Method called on instance (object) of class
+userSchema.methods.generateToken = function () {
+    let user = this;
+    const userObj = {_id:user._id.toHexString(), email:user.email}
+    const token = jwt.sign(userObj,process.env.DB_SECRET,{ expiresIn: "1d" })
+    return token
+}
+
+//Static method called on class, not on an instance of the class 
+userSchema.statics.emailTaken = async function(email){
+    const user = await this.findOne({email});
+    return !!user;
+}
+
 const User = mongoose.model('User', userSchema);
 module.exports = {User}
